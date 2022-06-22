@@ -27,17 +27,18 @@ jobs:
       - name: Run tests
         run: pytest
 
-      - name: Build stable distribution then publish to PyPI
+      - name: Build stable distribution
         run: |
           rm -rf dist/*
           python -m pip install --upgrade build
           python -m pip install twine
           python -m build
-          twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: $${{ secrets.TWINE_TEST_TOKEN }}
-          TWINE_REPOSITORY: testpypi
+      
+      - name: Publish distribution to TestPyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: $${{ secrets.TWINE_TEST_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
 
 
 
