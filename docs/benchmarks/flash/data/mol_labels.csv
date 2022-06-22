@@ -1,0 +1,16 @@
+name,mol,smiles
+acetone,C3-ONE,CC(=O)C
+2-butanone,C4-ONE,CCC(=O)C
+3-pentanone,C5-ONE,CCC(=O)CC
+3-hexanone,C6-ONE,CCCC(=O)CC
+4-heptanone,C7-ONE,CCCC(=O)CCC
+4-octanone,C8-ONE,CCCCC(=O)CCC
+5-nonanone,C9-ONE,CCCCC(=O)CCCC
+5-decanone,C10-ONE,CCCCCC(=O)CCCC
+6-undecanone,C11-ONE,CCCCCC(=O)CCCCC
+6-dodecanone,C12-ONE,CCCCCCC(=O)CCCCC
+6-tridecanone,C13-ONE,CCCCCCCC(=O)CCCCC
+7-tetradecanone,C14-ONE,CCCCCCCC(=O)CCCCCC
+8-pentadecanone,C15-ONE,CCCCCCCC(=O)CCCCCCC
+water,H2O,O
+carbon dioxide,CO2,C(=O)=O

@@ -1,0 +1,26 @@
+site_name: ML4PD
+theme:
+  name: material
+  palette:
+    scheme: slate
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.indexes
+    - navigation.top
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+extra_css:
+  - stylesheets/extra.css
+plugins:
+  - mkdocs-jupyter:
+      include: ["*.ipynb"]
+      kernel_name: ml4pd
+      theme: dark
+      include_source: True

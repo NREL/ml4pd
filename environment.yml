@@ -1,0 +1,27 @@
+name: ml4pd
+channels:
+ - conda-forge
+ - defaults
+dependencies:
+ - python>=3.8, <3.9
+ - scikit-learn==1.0.2
+ - lightgbm==3.3.2
+ - rdkit==2022.03.2 # For ML features
+ - thermo==0.2.13 # For ML features
+ - pint # For physics unit conversion
+ - pyarrow # For pandas
+ - pydantic # For type checks at runtime
+ - networkx # For graphs
+ - python-graphviz # For graphs. Don't have to install graphviz separately.
+ - ipython # To work with notebooks
+ - ipykernel # To work with notebooks
+ - seaborn # For notebook visualizations
+ - pytest
+ - black
+ - pylint
+ - tqdm
+ - pydot # To bridge networkx and graphviz
+ - pip
+ - pip:
+   - mkdocs-material # doesn't work if installed via conda. For documentation.
+   - mkdocs-jupyter # doesn't work if installed via conda. For documentation.

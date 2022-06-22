@@ -1,0 +1,11 @@
+scikit-learn==1.0.2
+lightgbm==3.3.2
+rdkit-pypi==2022.3.2.1
+thermo==0.2.13
+pint
+pyarrow
+pydantic
+networkx
+graphviz
+pydot
+ml4pd_models @ git+https://github.com/NREL/ml4pd_models.git@v1

@@ -1,0 +1,13 @@
+.git
+.pytest_cache
+.vscode
+.env
+.pylintrc
+**/__pycache__/
+*.pkl
+CoolPropFluids6.4.1.json
+**.egg-info/
+**/.pytest_cache/
+dist/
+**.zip
+**/tests/data/
