@@ -7,7 +7,7 @@ ML4PD is an open-source machine learning Python library that aims to speed up pr
 === "pip"
 
     ```bash
-    pip install ml4pd
+    pip install ml4pd git+https://github.com/NREL/ml4pd_models.git@v1
     ```
 
     then download [graphviz](https://graphviz.org/download/) for visualization.

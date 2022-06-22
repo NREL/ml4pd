@@ -8,4 +8,3 @@ pydantic
 networkx
 graphviz
 pydot
-ml4pd_models @ git+https://github.com/NREL/ml4pd_models.git@v1
