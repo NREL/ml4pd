@@ -10,4 +10,3 @@ CoolPropFluids6.4.1.json
 **/.pytest_cache/
 dist/
 **.zip
-**/tests/data/
