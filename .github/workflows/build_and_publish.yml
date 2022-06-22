@@ -35,12 +35,10 @@ jobs:
           python -m pip install twine
           python -m build
       
-      - name: Publish distribution to TestPyPI
+      - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
-          password: ${{ secrets.TWINE_TEST_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
-
+          password: ${{ secrets.TWINE_TOKEN }}
 
 
       
