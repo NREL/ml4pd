@@ -2,9 +2,10 @@ name: Build and publish
 
 on:
   release:
-    types: [publish]
+    types: [published]
 
 jobs:
+
   build_and_publish:
 
     runs-on: ubuntu-latest
