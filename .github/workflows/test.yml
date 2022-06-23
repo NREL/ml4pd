@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'ml4pd/*'
-      - 'tests/*'
+      - 'ml4pd/**'
+      - 'tests/**'
   pull_request:
 
 jobs:

@@ -1,6 +1,6 @@
 # Components
 
-Object to specify molecules in the system and pass that information along to streams and unit ops.
+Object to specify molecules of interest and pass that information along to streams and unit ops.
 
 ## Useful Attributes:
 
