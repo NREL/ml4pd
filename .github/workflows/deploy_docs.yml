@@ -1,0 +1,30 @@
+name: Deploy docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/*'
+      - 'mkdocs.yml'
+
+jobs:
+  build-deploy:
+    name: Build and deploy docs
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out current repo
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies for mkdocs
+        run: pip install mkdocs-material mkdocs-jupyter
+      
+      - name: Deploy to gh-pages
+        run: mkdocs gh-deploy --force
