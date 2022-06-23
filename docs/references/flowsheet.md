@@ -14,7 +14,7 @@ Flowsheet(
     models (one input stream with no loops).
 
 ## Data Checks
-- If passed graph isn't fully connected, an error will be raised.
+- If graph isn't fully connected, an error will be raised.
 
 ## Methods
 
