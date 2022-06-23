@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'ml4pd/*'
+      - 'tests/*'
   pull_request:
 
 jobs:
