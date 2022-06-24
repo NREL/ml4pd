@@ -35,11 +35,6 @@ class Components(BaseModel):
     - `data`: a df where each row is a molecule and each column is a feature of that molecule.
     - `__repr__`: table where each row is a specified molecule, and each column is a type of identifier.
         Useful for checking that `components` got the right molecules.
-
-    ## Example
-    ```python
-    from ml4pd import components
-    components.set_components(["acetone", "water", "ethanol"])
     ```
     """
 
@@ -96,9 +91,7 @@ class Components(BaseModel):
         Returns:
             identifiers (pd.DataFrame): with columns 'name', 'cas', 'smiles', 'iupac.'
         """
-        identifiers = thermo.datasheet.tabulate_constants(self.data["name"], full=True)[
-            ["smiles", "IUPAC name", "CAS"]
-        ].reset_index(drop=True)
+        identifiers = thermo.datasheet.tabulate_constants(self.data["name"], full=True)[["smiles", "IUPAC name", "CAS"]].reset_index(drop=True)
         identifiers["name"] = self.data["name"]
         identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
 
@@ -154,5 +147,6 @@ class Components(BaseModel):
         """Returns a prettified string of the identifiers dataframe."""
 
         return self.data[["name", "iupac", "smiles", "cas"]].to_string()
+
 
 components = Components()

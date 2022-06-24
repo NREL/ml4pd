@@ -5,7 +5,9 @@ on:
     branches:
       - main
     paths:
-      - 'ml4pd/**'
+      - 'ml4pd/*'
+      - 'ml4pd/aspen_units/**'
+      - 'ml4pd/streams/**'
       - 'tests/**'
   pull_request:
 

@@ -119,7 +119,11 @@ def generate_grid(**kwargs: Union[Dimension, list, float, int, str]) -> pd.DataF
     dtypes = []
     for key, range in kwargs.items():
         if isinstance(range, Dimension):
-            search_space[key] = range.generate()
+            values = range.generate()
+            if not isinstance(values, list):
+                search_space[key] = [values]
+            else:
+                search_space[key] = range.generate()
         elif isinstance(range, list):
             search_space[key] = range
         else:

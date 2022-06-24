@@ -65,20 +65,4 @@ temperature & vapor fraction since only 2 of 3 variables are needed to fully spe
 - User-created `MaterialStream` currently only suspports vapor fraction & temperature or
 vapor fraction & pressure. The range of these variables depend on the unit op the stream feeds to.
 
-## Example
-!!! note
-    `feed(molecules=molecules, flowrates=flowrates, **kwargs)` must be used to create/update `data`.
-
-```python
-from ml4pd import components
-from ml4pd.streams import MaterialStream
-from ml4pd.aspen_unit_ops import Distillation
-
-components.set_components(["water", "ethanol", "acetone"])
-molecules = {"name_A": ["water", "acetone"], "name_B": ["ethanol", "water"]}
-flowrates = {"flowrate_A": [0.5, 0.3], "flowrate_B": [0.7, 0.7]}
-
-feed = MaterialStream(pressure=3, vapor_fraction=0)(molecules=molecules, flowrates=flowrates)
-```
-
 

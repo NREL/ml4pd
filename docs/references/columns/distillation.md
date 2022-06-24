@@ -67,21 +67,4 @@ against a global registry to prevent duplicates.
 - `status`: numpy array specifying which row of ML df should be trusted. Similar to how
 Aspen indicates Errors.
 
-## Example
-```python
-from ml4pd import components
-from ml4pd.streams import MaterialStream
-from ml4pd.aspen_unit_ops import Distillation
-
-components.set_components(["water", "ethanol", "acetone"])
-molecules = {"name_A": ["water", "acetone"], "name_B": ["ethanol", "water"]}
-flowrates = {"flowrate_A": [0.5, 0.3], "flowrate_B": [0.7, 0.7]}
-
-feed = MaterialStream(pressure=3, vapor_fraction=0)
-dist_col = Distillation(no_stages=40, feed_stage=10, boilup_ratio=0.5, reflux_ratio=0.5)
-
-feed = feed(molecules=molecules, flowrates=flowrates)
-bott, dist = dist_col(feed, pressure=3)
-```
-
 
