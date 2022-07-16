@@ -65,7 +65,7 @@ class Components(BaseModel):
             warnings.warn("There are less than two molecules in components.", stacklevel=2)
 
         self.data = pd.DataFrame({"name": molecules})
-        identifiers = self._get_identifiers()
+        identifiers = self._get_identifiers(self.data)
         self.data = self.data.merge(identifiers, left_on="name", right_on="name")
         self.data = self.data.apply(self._get_rdkit_data, axis=1)
         self.data = self._get_thermo_data(self.data).rename(columns=thermo_dict)
@@ -84,15 +84,30 @@ class Components(BaseModel):
         new_molecules = list(set(new_molecules + self.data["name"].to_list()))
         self.set_components(new_molecules)
 
-    def _get_identifiers(self) -> pd.DataFrame:
+    @staticmethod
+    def _get_identifiers(data) -> pd.DataFrame:
         """
         Looks up different identifiers for the input molecules.
 
         Returns:
             identifiers (pd.DataFrame): with columns 'name', 'cas', 'smiles', 'iupac.'
         """
-        identifiers = thermo.datasheet.tabulate_constants(self.data["name"], full=True)[["smiles", "IUPAC name", "CAS"]].reset_index(drop=True)
-        identifiers["name"] = self.data["name"]
+        try:
+            identifiers = thermo.datasheet.tabulate_constants(data["name"], full=True)[["smiles", "IUPAC name", "CAS"]].reset_index(drop=True)
+            identifiers["name"] = data["name"]
+            identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
+        except ValueError:
+            unknown = []
+            identifiers = pd.DataFrame(columns=["smiles", "IUPAC name", "CAS"])
+            for _, row in data.iterrows():
+                try:
+                    new_molecule = thermo.datasheet.tabulate_constants(row["name"], full=True)[["smiles", "IUPAC name", "CAS"]]
+                    identifiers = pd.concat([identifiers, new_molecule]).reset_index(drop=True)
+                except:
+                    unknown.append(row["name"])
+            warnings.warn(f"{unknown} aren't recognized.", stacklevel=2)
+
+        identifiers["name"] = data["name"]
         identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
 
         return identifiers
@@ -142,6 +157,34 @@ class Components(BaseModel):
         df = df.merge(df_thermo, left_on="iupac", right_on="iupac").copy(deep=True)
 
         return df
+
+    @validate_arguments
+    def get_components(self, molecules: List[StrictStr]):
+        """
+        Specify molecules to use and get data for. Streams & unit ops will get
+        data from here & check their input data against the specified molecules.
+
+        Args:
+            molecules (pd.DataFrame, dict, list): if pd.DataFrame/dict, the
+            key/column must be 'name.' The molecules must have 'iupac-like'
+            names. Don't input formula/cas/smiles or other representations.
+            For example, to specify 2-butanone, butan-2-one also works.
+        """
+
+        if len(molecules) != len(set(molecules)):
+            warnings.warn("Dropping duplicates found in molecules.", stacklevel=2)
+            molecules = list(set(molecules))
+
+        if len(molecules) < 2:
+            warnings.warn("There are less than two molecules in components.", stacklevel=2)
+
+        data = pd.DataFrame({"name": molecules})
+        identifiers = self._get_identifiers(data)
+        data = data.merge(identifiers, left_on="name", right_on="name")
+        data = data.apply(self._get_rdkit_data, axis=1)
+        data = self._get_thermo_data(self.data).rename(columns=thermo_dict)
+
+        return data
 
     def __repr__(self):
         """Returns a prettified string of the identifiers dataframe."""

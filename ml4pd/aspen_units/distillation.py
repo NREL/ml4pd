@@ -7,6 +7,7 @@ from dataclasses import field
 from typing import Dict, List, Literal, Tuple, Union
 
 import numpy as np
+import pandas as pd
 from ml4pd.aspen_units.unit import UnitOp
 from ml4pd.streams import MaterialStream
 from ml4pd.aspen_units.utils import get_model, relu
@@ -130,6 +131,7 @@ class Distillation(UnitOp):
             self.object_id = f"D{Distillation.unit_no}"
 
         self.after: Dict[str, str] = {"bott": None, "dist": None}
+        self.model_fname: str = None
 
         super().__post_init__()
 
@@ -166,9 +168,9 @@ class Distillation(UnitOp):
 
     def _predict(self, feed_stream: MaterialStream) -> Tuple[MaterialStream, MaterialStream]:
 
-        model_fname = get_model(module=distillation_models, pattern=f"distillation_{len(feed_stream._suffixes)}_")
+        self.model_fname = get_model(module=distillation_models, pattern=f"distillation_{len(feed_stream._suffixes)}_")
 
-        with importlib.resources.path(distillation_models, model_fname) as model_path:
+        with importlib.resources.path(distillation_models, self.model_fname) as model_path:
             with open(model_path, "rb") as model_file:
                 stat_model = pickle.load(model_file)
                 flow_model = pickle.load(model_file)
@@ -236,6 +238,45 @@ class Distillation(UnitOp):
         dist_stream.status = self.status
 
         return bott_stream, dist_stream
+
+    @validate_arguments
+    def get_model(self, model_type: Literal["stat", "flow", "duty", "temp"]):
+        """Get underlying ML model for further analysis
+
+        Args:
+            model_type (str): can be 'stat', 'flow', 'duty', or 'temp'
+
+        Returns:
+            model: ML model for a specific variable.
+        """
+        with importlib.resources.path(distillation_models, self.model_fname) as model_path:
+            with open(model_path, "rb") as model_file:
+                stat_model = pickle.load(model_file)
+                flow_model = pickle.load(model_file)
+                duty_model = pickle.load(model_file)
+                temp_model = pickle.load(model_file)
+
+        if model_type == "stat":
+            return stat_model
+        elif model_type == "flow":
+            return flow_model
+        elif model_type == "duty":
+            return duty_model
+        elif model_type == "temp":
+            return temp_model
+
+    def get_input_data(self) -> pd.DataFrame:
+        """Get data used for ML.
+
+        Returns:
+            x: pd.DataFrame of input data.
+        """
+
+        if self.fillna:
+            x = self.data.fillna(self.na_value).select_dtypes(exclude="object")
+        else:
+            x = self.data.select_dtypes(exclude="object")
+        return x
 
     def _check_feed_stage(self):
         """Make sure feed stage exists and makes sense.
