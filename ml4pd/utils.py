@@ -9,6 +9,8 @@ def timer(verbose: bool, operation: str, unit: str):
     """Use this function with 'with' to time any block of code."""
 
     try:
+        if verbose:
+            print(f"{unit}: starting {operation}.")
         start_time = time.time()
         yield start_time
     finally:
