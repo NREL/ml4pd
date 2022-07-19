@@ -64,15 +64,16 @@ class Components(BaseModel):
         if len(molecules) < 2:
             warnings.warn("There are less than two molecules in components.", stacklevel=2)
 
-        self.data = pd.DataFrame({"name": molecules})
-        identifiers = self._get_identifiers(self.data)
-        self.data = self.data.merge(identifiers, left_on="name", right_on="name")
-        self.data = self.data.apply(self._get_rdkit_data, axis=1)
-        self.data = self._get_thermo_data(self.data).rename(columns=thermo_dict)
+        data = pd.DataFrame({"name": molecules})
+        identifiers = self._get_identifiers(data)
+        data = data.merge(identifiers, left_on="name", right_on="name").dropna(how="all")
+        data = data.apply(self._get_rdkit_data, axis=1)
+        data = self._get_thermo_data(data).rename(columns=thermo_dict)
         if self.fill_na:
-            nan_cols = self.data.columns[self.data.isna().any()].to_list()
+            nan_cols = data.columns[data.isna().any()].to_list()
             for col in nan_cols:
-                self.data[col] = self.data[col].fillna(self.data[col].median())
+                data[col] = data[col].fillna(data[col].median())
+        self.data = data
 
     @validate_arguments
     def add_components(self, new_molecules: List[StrictStr]):
