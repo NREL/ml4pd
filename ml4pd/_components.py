@@ -92,22 +92,27 @@ class Components(BaseModel):
         Returns:
             identifiers (pd.DataFrame): with columns 'name', 'cas', 'smiles', 'iupac.'
         """
+        unknown = []
+        unknown_ind = []
         try:
             identifiers = thermo.datasheet.tabulate_constants(data["name"], full=True)[["smiles", "IUPAC name", "CAS"]].reset_index(drop=True)
             identifiers["name"] = data["name"]
             identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
         except ValueError:
-            unknown = []
             identifiers = pd.DataFrame(columns=["smiles", "IUPAC name", "CAS"])
-            for _, row in data.iterrows():
+            for ind, row in data.iterrows():
                 try:
                     new_molecule = thermo.datasheet.tabulate_constants(row["name"], full=True)[["smiles", "IUPAC name", "CAS"]]
                     identifiers = pd.concat([identifiers, new_molecule]).reset_index(drop=True)
                 except:
                     unknown.append(row["name"])
+                    unknown_ind.append(ind)
             warnings.warn(f"{unknown} aren't recognized.", stacklevel=2)
 
-        identifiers["name"] = data["name"]
+        if unknown:
+            identifiers["name"] = data.copy(deep=True).drop(index=unknown_ind).reset_index(drop=True)["name"]
+        else:
+            identifiers["name"] = data["name"]
         identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
 
         return identifiers
@@ -180,7 +185,7 @@ class Components(BaseModel):
 
         data = pd.DataFrame({"name": molecules})
         identifiers = self._get_identifiers(data)
-        data = data.merge(identifiers, left_on="name", right_on="name")
+        data = data.merge(identifiers, left_on="name", right_on="name").dropna(how="all")
         data = data.apply(self._get_rdkit_data, axis=1)
         data = self._get_thermo_data(data).rename(columns=thermo_dict)
 
