@@ -136,7 +136,10 @@ class Components(BaseModel):
             fns = [(x, y) for x, y in Descriptors.descList if x in rdkit_features]
             res = {}
             for feature, function in fns:
-                res[feature] = function(molecule)
+                try:
+                    res[feature] = function(molecule)
+                except ValueError:
+                    res[feature] = None
         else:
             res = dict(zip(rdkit_features, [None] * (len(rdkit_features))))
             res["smiles"] = smiles
