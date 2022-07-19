@@ -182,7 +182,7 @@ class Components(BaseModel):
         identifiers = self._get_identifiers(data)
         data = data.merge(identifiers, left_on="name", right_on="name")
         data = data.apply(self._get_rdkit_data, axis=1)
-        data = self._get_thermo_data(self.data).rename(columns=thermo_dict)
+        data = self._get_thermo_data(data).rename(columns=thermo_dict)
 
         return data
 
