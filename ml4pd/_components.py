@@ -95,7 +95,7 @@ class Components(BaseModel):
             identifiers = thermo.datasheet.tabulate_constants(data["name"], full=True)[["smiles", "IUPAC name", "CAS"]].reset_index(drop=True)
             identifiers["name"] = data["name"]
             identifiers = identifiers.rename(columns={"IUPAC name": "iupac", "CAS": "cas"})
-        except ValueError:
+        except (ValueError, KeyError):
             identifiers = pd.DataFrame(columns=["smiles", "IUPAC name", "CAS"])
             for ind, row in data.iterrows():
                 try:
