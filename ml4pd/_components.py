@@ -56,19 +56,7 @@ class Components(BaseModel):
             names. Don't input formula/cas/smiles or other representations.
             For example, to specify 2-butanone, butan-2-one also works.
         """
-
-        if len(molecules) != len(set(molecules)):
-            warnings.warn("Dropping duplicates found in molecules.", stacklevel=2)
-            molecules = list(set(molecules))
-
-        if len(molecules) < 2:
-            warnings.warn("There are less than two molecules in components.", stacklevel=2)
-
-        data = pd.DataFrame({"name": molecules})
-        identifiers = self._get_identifiers(data)
-        data = data.merge(identifiers, left_on="name", right_on="name").dropna(how="all")
-        data = data.apply(self._get_rdkit_data, axis=1)
-        data = self._get_thermo_data(data).rename(columns=thermo_dict)
+        data = self.get_components(molecules)
         if self.fill_na:
             nan_cols = data.columns[data.isna().any()].to_list()
             for col in nan_cols:
@@ -81,9 +69,16 @@ class Components(BaseModel):
         Add more molecules to the existing list of molecules. Use ony after set_components().
         May be ueful when process produces molecules that are not accounted for initially.
         """
-
-        new_molecules = list(set(new_molecules + self.data["name"].to_list()))
-        self.set_components(new_molecules)
+        duplicates = set(new_molecules) & self.data["name"].to_list()
+        new_molecules = list(set(new_molecules))
+        for molecule in duplicates:
+            new_molecules.remove(molecule)
+        new_data = self.get_components(new_molecules)
+        self.data = pd.concat([self.data, new_data], axis=0, ignore_index=True)
+        if self.fill_na:
+            nan_cols = data.columns[data.isna().any()].to_list()
+            for col in nan_cols:
+                data[col] = data[col].fillna(data[col].median())
 
     @staticmethod
     def _get_identifiers(data) -> pd.DataFrame:
