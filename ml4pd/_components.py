@@ -69,7 +69,7 @@ class Components(BaseModel):
         Add more molecules to the existing list of molecules. Use ony after set_components().
         May be ueful when process produces molecules that are not accounted for initially.
         """
-        duplicates = set(new_molecules) & self.data["name"].to_list()
+        duplicates = set(new_molecules) & set(self.data["name"].to_list())
         new_molecules = list(set(new_molecules))
         for molecule in duplicates:
             new_molecules.remove(molecule)
