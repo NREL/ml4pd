@@ -74,11 +74,12 @@ class Components(BaseModel):
         for molecule in duplicates:
             new_molecules.remove(molecule)
         new_data = self.get_components(new_molecules)
-        self.data = pd.concat([self.data, new_data], axis=0, ignore_index=True)
+        data = pd.concat([self.data, new_data], axis=0, ignore_index=True)
         if self.fill_na:
             nan_cols = data.columns[data.isna().any()].to_list()
             for col in nan_cols:
                 data[col] = data[col].fillna(data[col].median())
+        self.data = data
 
     @staticmethod
     def _get_identifiers(data) -> pd.DataFrame:
