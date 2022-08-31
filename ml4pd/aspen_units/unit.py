@@ -104,7 +104,7 @@ class UnitOp(ABC):
                 quants = default_and_quants[default_unit]
                 for quant in quants:
                     user_quant = getattr(self, quant)
-                    if user_quant is not None:
+                    if user_quant not in [None, np.nan]:
                         default_quant = ureg.Quantity(user_quant, ureg(user_unit)).to(default_unit).magnitude
                         if isinstance(default_quant, np.ndarray):
                             setattr(self, quant, default_quant.tolist())
@@ -125,7 +125,7 @@ class UnitOp(ABC):
                     unit_data[f"{self.object_id}_{key}"] = getattr(self, key)
 
         try:
-            unit_data = pd.DataFrame(unit_data)
+            unit_data = pd.DataFrame(unit_data).fillna(np.nan)
         except ValueError:
             unit_data = pd.DataFrame(unit_data, index=[0])
 
@@ -164,3 +164,16 @@ class UnitOp(ABC):
         delattr(self, "status")
         delattr(self, "unit_data")
         delattr(self, "data")
+
+    def get_input_data(self) -> pd.DataFrame:
+        """Get data used for ML.
+
+        Returns:
+            x: pd.DataFrame of input data.
+        """
+
+        if self.fillna:
+            x = self.data.fillna(self.na_value).select_dtypes(exclude="object")
+        else:
+            x = self.data.select_dtypes(exclude="object")
+        return x

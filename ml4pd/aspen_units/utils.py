@@ -4,9 +4,10 @@ import importlib.resources
 from types import ModuleType
 from typing import Union
 import numpy as np
+import pickle
 
 
-def relu(array: np.ndarray, max_value: Union[float, int]) -> np.ndarray:
+def relu(array: np.ndarray, max_value: Union[float, int] = None) -> np.ndarray:
     """numpy version of tf.ReLU(max_value)
 
     Args:
@@ -17,11 +18,12 @@ def relu(array: np.ndarray, max_value: Union[float, int]) -> np.ndarray:
         np.ndarray: array with same dimentions at array but values are between (0, max_value).
     """
     array = np.maximum(array, np.full(shape=array.shape, fill_value=0))
-    array = np.minimum(array, np.full(shape=array.shape, fill_value=max_value))
+    if max_value:
+        array = np.minimum(array, np.full(shape=array.shape, fill_value=max_value))
     return array
 
 
-def get_model(module: ModuleType, pattern: str, ftype: str = "pkl") -> str:
+def get_model_fname(module: ModuleType, pattern: str, ftype: str = "pkl") -> str:
     """Get ml model from a module.
 
     Args:
@@ -37,3 +39,16 @@ def get_model(module: ModuleType, pattern: str, ftype: str = "pkl") -> str:
     model_fname = [fname for fname in model_fnames if pattern in fname][0]
 
     return model_fname
+
+
+def load_models(module_name: ModuleType, model_fname: str):
+
+    models = []
+    with importlib.resources.path(module_name, model_fname) as model_path:
+        with open(model_path, "rb") as model_file:
+            while True:
+                try:
+                    models.append(pickle.load(model_file))
+                except EOFError:
+                    break
+    return models

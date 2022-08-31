@@ -93,7 +93,7 @@ class MaterialStream(Stream):
     # ------ DO NOT CHANGE THE ORDER OF THESE VARIABLES. WILL MESS UP ML. ------ #
     temperature: Union[float, List[float]] = field(default=None, repr=False)
     vapor_fraction: Union[float, List[float]] = field(default=None, repr=False)
-    pressure: Union[float, List[float]] = field(default=None, repr=None)
+    pressure: Union[float, List[float]] = field(default=None, repr=False)
     # ------ DO NOT CHANGE THE ORDER OF THESE VARIABLES. WILL MESS UP ML. ------ #
 
     stream_type: Literal["feed", "bott", "dist", "liquid", "vapor"] = "feed"
@@ -280,7 +280,10 @@ class MaterialStream(Stream):
             self._flow_columns.append(f"{self.object_id}_flowrate_{suffix}")
 
         for col in ["temperature", "vapor_fraction", "pressure"]:
-            self.data[f"{self.object_id}_{col}"] = getattr(self, col)
+            if getattr(self, col) is None:
+                self.data[f"{self.object_id}_{col}"] = np.nan
+            else:
+                self.data[f"{self.object_id}_{col}"] = getattr(self, col)
             self._state_columns.append(f"{self.object_id}_{col}")
 
     def _add_comp_no(self):

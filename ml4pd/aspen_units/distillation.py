@@ -1,7 +1,5 @@
 """Predict the aspen output of a distillation column."""
 
-import importlib.resources
-import pickle
 import warnings
 from dataclasses import field
 from typing import Dict, List, Literal, Tuple, Union
@@ -10,7 +8,7 @@ import numpy as np
 import pandas as pd
 from ml4pd.aspen_units.unit import UnitOp
 from ml4pd.streams import MaterialStream
-from ml4pd.aspen_units.utils import get_model, relu
+from ml4pd.aspen_units.utils import get_model_fname, relu, load_models
 from ml4pd.streams.utils import update_material_streams
 from ml4pd.utils import timer
 
@@ -146,16 +144,16 @@ class Distillation(UnitOp):
         if feed_stream.data is not None:
 
             if self.check_data:
-                with timer(verbose=self.verbose, operation="data check", unit=self.object_id) as _:
+                with timer(verbose=self.verbose, operation="data check", unit=self.object_id):
                     self._check_feed_stage()
                     self._check_num_cols()
                     self._check_units()
 
-            with timer(verbose=self.verbose, operation="data prep", unit=self.object_id) as _:
+            with timer(verbose=self.verbose, operation="data prep", unit=self.object_id):
                 self.unit_data = self._format_unit_data()
                 self.data = self._combine_unit_and_stream_data(feed_stream)
 
-            with timer(verbose=self.verbose, operation="ML", unit=self.object_id) as _:
+            with timer(verbose=self.verbose, operation="ML", unit=self.object_id):
                 bott_stream, dist_stream = self._predict(feed_stream)
         else:
             bott_stream = MaterialStream(stream_type="bott", before=self.object_id)
@@ -168,25 +166,16 @@ class Distillation(UnitOp):
 
     def _predict(self, feed_stream: MaterialStream) -> Tuple[MaterialStream, MaterialStream]:
 
-        self.model_fname = get_model(module=distillation_models, pattern=f"distillation_{len(feed_stream._suffixes)}_")
-
-        with importlib.resources.path(distillation_models, self.model_fname) as model_path:
-            with open(model_path, "rb") as model_file:
-                stat_model = pickle.load(model_file)
-                flow_model = pickle.load(model_file)
-                duty_model = pickle.load(model_file)
-                temp_model = pickle.load(model_file)
+        self.model_fname = get_model_fname(module=distillation_models, pattern=f"distillation_{len(feed_stream._suffixes)}_")
+        stat_model, flow_model, duty_model, temp_model = load_models(distillation_models, self.model_fname)
 
         # Prepare data
-        if self.fillna:
-            x = self.data.fillna(self.na_value).select_dtypes(exclude="object")
-        else:
-            x = self.data.select_dtypes(exclude="object")
+        x = self.get_input_data()
 
         # Get predictions
         stat = stat_model.predict(x)
         flow = flow_model.predict(x)
-        duty = duty_model.predict(x)
+        duty = relu(duty_model.predict(x))
         temp = temp_model.predict(x)
 
         # Get flowrates
@@ -240,7 +229,7 @@ class Distillation(UnitOp):
         return bott_stream, dist_stream
 
     @validate_arguments
-    def get_model(self, model_type: Literal["stat", "flow", "duty", "temp"]):
+    def get_loaded_model(self, model_type: Literal["stat", "flow", "duty", "temp"]):
         """Get underlying ML model for further analysis
 
         Args:
@@ -249,12 +238,7 @@ class Distillation(UnitOp):
         Returns:
             model: ML model for a specific variable.
         """
-        with importlib.resources.path(distillation_models, self.model_fname) as model_path:
-            with open(model_path, "rb") as model_file:
-                stat_model = pickle.load(model_file)
-                flow_model = pickle.load(model_file)
-                duty_model = pickle.load(model_file)
-                temp_model = pickle.load(model_file)
+        stat_model, flow_model, duty_model, temp_model = load_models(distillation_models, self.model_fname)
 
         if model_type == "stat":
             return stat_model
@@ -264,19 +248,6 @@ class Distillation(UnitOp):
             return duty_model
         elif model_type == "temp":
             return temp_model
-
-    def get_input_data(self) -> pd.DataFrame:
-        """Get data used for ML.
-
-        Returns:
-            x: pd.DataFrame of input data.
-        """
-
-        if self.fillna:
-            x = self.data.fillna(self.na_value).select_dtypes(exclude="object")
-        else:
-            x = self.data.select_dtypes(exclude="object")
-        return x
 
     def _check_feed_stage(self):
         """Make sure feed stage exists and makes sense.

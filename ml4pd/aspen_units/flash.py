@@ -1,15 +1,12 @@
 """Predict the aspen output of a flash column."""
 
-
-import importlib.resources
-import pickle
 from dataclasses import field
 from typing import ClassVar, Dict, List, Literal, Tuple, Union
 
 import numpy as np
 from ml4pd.aspen_units.unit import UnitOp
 from ml4pd.streams import MaterialStream
-from ml4pd.aspen_units.utils import get_model, relu
+from ml4pd.aspen_units.utils import get_model_fname, relu, load_models
 from ml4pd.streams.utils import update_material_streams
 from ml4pd.utils import timer
 
@@ -109,16 +106,16 @@ class Flash(UnitOp):
         if feed_stream.data is not None:
 
             if self.check_data:
-                with timer(verbose=self.verbose, operation="data check", unit=self.object_id) as _:
+                with timer(verbose=self.verbose, operation="data check", unit=self.object_id):
                     self._check_redundancy()
                     self._check_pressure(feed_stream)
                     self._check_units()
-            with timer(verbose=self.verbose, operation="data prep", unit=self.object_id) as _:
+            with timer(verbose=self.verbose, operation="data prep", unit=self.object_id):
                 self._adjust_pressure(feed_stream)
                 self.unit_data = self._format_unit_data()
                 self.data = self._combine_unit_and_stream_data(feed_stream)
 
-            with timer(verbose=self.verbose, operation="ML", unit=self.object_id) as _:
+            with timer(verbose=self.verbose, operation="ML", unit=self.object_id):
                 vapor_stream, liquid_stream = self._predict(feed_stream)
 
         else:
@@ -132,19 +129,11 @@ class Flash(UnitOp):
 
     def _predict(self, feed_stream: MaterialStream) -> Tuple[MaterialStream, MaterialStream]:
 
-        model_fname = get_model(module=flash_models, pattern=f"flash_{len(feed_stream._suffixes)}_")
-
-        with importlib.resources.path(flash_models, model_fname) as model_path:
-            with open(model_path, "rb") as model_file:
-                stat_model = pickle.load(model_file)
-                flow_model = pickle.load(model_file)
-                temp_model = pickle.load(model_file)
+        model_fname = get_model_fname(module=flash_models, pattern=f"flash_{len(feed_stream._suffixes)}_")
+        stat_model, flow_model, temp_model = load_models(flash_models, model_fname)
 
         # Prepare data
-        if self.fillna:
-            x = self.data.fillna(self.na_value).select_dtypes(exclude="object")
-        else:
-            x = self.data.select_dtypes(exclude="object")
+        x = self.get_input_data()
 
         # Get predictions
         stat = stat_model.predict(x)

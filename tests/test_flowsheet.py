@@ -1,3 +1,4 @@
+import numpy as np
 from ml4pd import components
 from ml4pd.streams import MaterialStream
 from ml4pd.aspen_units import Distillation
@@ -88,28 +89,49 @@ bott_6, dist_6 = colu_6(bott_5)
 
 
 def test_feed_stream():
-    assert (feed_3.data.to_numpy() != feed_5.data.to_numpy()).sum() == 0
+    assert np.array_equal(feed_3.data.select_dtypes(include="object").to_numpy(), feed_5.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(
+        feed_3.data.select_dtypes(exclude="object").to_numpy(), feed_5.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
 
 
 def test_first_column():
-    assert (colu_3.data.to_numpy() != colu_5.data.to_numpy()).sum() == 0
+    assert np.array_equal(colu_3.data.select_dtypes(include="object").to_numpy(), colu_5.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(
+        colu_3.data.select_dtypes(exclude="object").to_numpy(), colu_5.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
     assert colu_3.condensor_duty == colu_5.condensor_duty
     assert colu_3.reboiler_duty == colu_5.reboiler_duty
     assert all(colu_3.status == colu_5.status)
 
 
 def test_first_output_streams():
-    assert (bott_3.data.to_numpy() != bott_5.data.to_numpy()).sum() == 0
-    assert (dist_3.data.to_numpy() != dist_5.data.to_numpy()).sum() == 0
+    assert np.array_equal(bott_3.data.select_dtypes(include="object").to_numpy(), bott_5.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(dist_3.data.select_dtypes(include="object").to_numpy(), dist_5.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(
+        bott_3.data.select_dtypes(exclude="object").to_numpy(), bott_5.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
+    assert np.array_equal(
+        dist_3.data.select_dtypes(exclude="object").to_numpy(), dist_5.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
 
 
 def test_second_column():
-    assert (colu_4.data.to_numpy() != colu_6.data.to_numpy()).sum() == 0
+    assert np.array_equal(colu_4.data.select_dtypes(include="object").to_numpy(), colu_6.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(
+        colu_4.data.select_dtypes(exclude="object").to_numpy(), colu_6.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
     assert colu_4.condensor_duty == colu_6.condensor_duty
     assert colu_4.reboiler_duty == colu_6.reboiler_duty
     assert all(colu_4.status == colu_6.status)
 
 
 def test_second_output_streams():
-    assert (bott_4.data.to_numpy() != bott_6.data.to_numpy()).sum() == 0
-    assert (dist_4.data.to_numpy() != dist_6.data.to_numpy()).sum() == 0
+    assert np.array_equal(bott_4.data.select_dtypes(include="object").to_numpy(), bott_6.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(dist_4.data.select_dtypes(include="object").to_numpy(), dist_6.data.select_dtypes(include="object").to_numpy())
+    assert np.array_equal(
+        bott_4.data.select_dtypes(exclude="object").to_numpy(), bott_6.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
+    assert np.array_equal(
+        dist_4.data.select_dtypes(exclude="object").to_numpy(), dist_6.data.select_dtypes(exclude="object").to_numpy(), equal_nan=True
+    )
