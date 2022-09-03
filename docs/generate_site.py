@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from ml4pd.streams import MaterialStream
 from ml4pd.aspen_units import Distillation, Flash

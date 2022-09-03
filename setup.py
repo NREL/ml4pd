@@ -24,7 +24,7 @@ setup(
     name="ml4pd",
     version=today,
     maintainer="Hien Vo",
-    maintainer_email="hvo@nrel.gov",
+    maintainer_email="nolan.wilson@nrel.gov",
     description="ML4PD - an open-source libray for building Aspen-like process models via machine learning.",
     long_description=long_description,
     long_description_content_type="text/markdown",

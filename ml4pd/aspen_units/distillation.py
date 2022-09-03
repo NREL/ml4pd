@@ -175,7 +175,7 @@ class Distillation(UnitOp):
         # Get predictions
         stat = stat_model.predict(x)
         flow = flow_model.predict(x)
-        duty = relu(duty_model.predict(x))
+        duty = duty_model.predict(x)
         temp = temp_model.predict(x)
 
         # Get flowrates
@@ -194,8 +194,8 @@ class Distillation(UnitOp):
         dist_flow = dist_flow.rename(columns=col_dict).to_dict("list")
 
         # Set heat & status for column.
-        self.condensor_duty = (duty[:, 0] * feed_stream.flow_sum).tolist()
-        self.reboiler_duty = (duty[:, 1] * feed_stream.flow_sum).tolist()
+        self.condensor_duty = (-relu(-duty[:, 0]) * feed_stream.flow_sum).tolist()
+        self.reboiler_duty = (relu(duty[:, 1]) * feed_stream.flow_sum).tolist()
         if feed_stream.status is not None:
             self.status = stat * feed_stream.status
         else:
