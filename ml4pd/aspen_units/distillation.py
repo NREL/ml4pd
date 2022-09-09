@@ -130,6 +130,7 @@ class Distillation(UnitOp):
 
         self.after: Dict[str, str] = {"bott": None, "dist": None}
         self.model_fname: str = None
+        self.fillna = False
 
         super().__post_init__()
 

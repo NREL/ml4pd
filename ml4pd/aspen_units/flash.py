@@ -92,6 +92,7 @@ class Flash(UnitOp):
             self.object_id = f"F{Flash.unit_no}"
 
         self.after: Dict[str, str] = {"vapor": None, "liquid": None}
+        self.fillna = False
 
         super().__post_init__()
 
