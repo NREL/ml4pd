@@ -92,12 +92,13 @@ plot_utils.plot_confusion_matrix(ordered_data, dist_col.status)
         nbf.v4.new_markdown_cell("## Flowrates Benchmark"),
         nbf.v4.new_code_cell(
             """\
-prep_dist.plot_flow(
+plot_utils.plot(
     all_true=ordered_data,
-    y_pred=bott_stream.flow,
+    flow_type="flowrate_bott",
     data_slice={
         'Status': 'OK',
-    }
+    },
+    **bott_stream.flow
 )"""
         ),
     ]
@@ -133,11 +134,12 @@ plot_utils.plot(
         nbf.v4.new_markdown_cell("## Mean Absolute Error"),
         nbf.v4.new_code_cell(
             """\
-prep_dist.evaluate_flow(
+evaluators.evaluate(
     all_true=ordered_data, 
-    y_pred=bott_stream.flow,
+    flow_type='flowrate_bott',
     metric='mae',
-    data_slice={"Status": "OK"}
+    data_slice={"Status": "OK"},
+    **bott_stream.flow
 )"""
         ),
         nbf.v4.new_code_cell(
@@ -184,5 +186,5 @@ evaluators.evaluate(
 
 if __name__ == "__main__":
     current_dir = Path(__file__).absolute().parent.resolve()
-    for comp in [2, 3, 4, 5]:
+    for comp in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]:
         create_notebook(comp, ["220803", "220821"], ["ketone", "vfa"], "aspen", "distillation")
