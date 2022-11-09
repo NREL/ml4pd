@@ -109,6 +109,8 @@ class MaterialStream(Stream):
 
         self.flow: pd.DataFrame = None
         self.flow_norm: pd.DataFrame = None
+        self.molecules_dict = Dict[str, Union[str, List[str]]]
+        self.flowrates_dict = Dict[str, Union[float, List[float]]]
         self.flow_sum: pd.Series = None
         self._flow_columns: List[str] = []
         self._state_columns: List[str] = []
@@ -144,7 +146,9 @@ class MaterialStream(Stream):
         Returns:
             MaterialStream: current instance to be fed into columns.
         """
-
+        self.molecules_dict = molecules
+        self.flowrates_dict = flowrates
+        
         for key, value in kwargs.items():
             if key not in self.__dataclass_fields__:
                 raise AttributeError(f"{key} not recognized.")
