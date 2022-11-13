@@ -7,6 +7,7 @@ from typing import Dict, List, Literal, Union
 
 import numpy as np
 import pandas as pd
+import re
 from pint import UnitRegistry
 from pydantic import validate_arguments
 from pydantic.dataclasses import dataclass
@@ -146,9 +147,7 @@ class MaterialStream(Stream):
         Returns:
             MaterialStream: current instance to be fed into columns.
         """
-        self.molecules_dict = molecules
-        self.flowrates_dict = flowrates
-        
+
         for key, value in kwargs.items():
             if key not in self.__dataclass_fields__:
                 raise AttributeError(f"{key} not recognized.")
@@ -184,6 +183,8 @@ class MaterialStream(Stream):
             self._add_mol_data()
             self._add_flowrates_and_state_variables()
             self._add_comp_no()
+            self._add_mol_flow_dicts()
+            self._add_datasummary()
 
         return self
 
@@ -304,6 +305,53 @@ class MaterialStream(Stream):
         for suffix in self._suffixes:
             mol_data = components.data.rename(mapper=partial(add_suffix, suf=f"_{suffix}"), axis="columns")
             self.data = pd.merge(self.data, mol_data, how="left")
+    
+    def _add_mol_flow_dicts(self):
+        """Adds molecule and flowrate dictionaries for easy access.
+        """
+        # get keys
+        k = self.data.keys()
+
+        # get flowrate dict
+        self.flowrates_dict = self.flow.to_dict('list')
+
+        # get molecule dict
+        dfname = self.data[k[k.str.contains('name_[A-Z]')]]
+        self.molecules_dict = {re.search('name_[A-Z]', k)[0]:v[0] for k,v in dfname.to_dict().items()}
+
+    def _add_datasummary(self):
+        """Adds summary dataframe for stream"""
+        # get selected keys
+        
+        k = self.data.keys()
+        k_select= (list(k[k.str.contains('_temperature')])+
+                    list(k[k.str.contains('_pressure')])+
+                    list(k[k.str.contains('_vapor_fraction')])+
+                    list(k[k.str.contains('name_[A-Z]')])
+                )
+
+        # get selected columns
+        dfselect = self.data[k_select]
+
+        # rename columns
+        cols = []
+        for k in dfselect.keys():
+            try:
+                s = re.search(r'(flowrate_[A-Z])|(name_[A-Z])|(temperature)|(pressure)|(vapor_fraction)', k)[0]
+            except:
+                s = k
+            cols.append(s)
+        dfselect.columns= cols
+
+        # append flows
+        dfselect = pd.concat([dfselect,self.flow],axis=1)
+
+        # calculate total flow
+        vs = dfselect[dfselect.keys()[dfselect.keys().str.contains("flowrate")]].sum(1)
+        vs.name='flowrate_total'
+
+        # add to self
+        self.datasummary = pd.concat([dfselect,pd.DataFrame(vs)],axis=1)
 
     def _check_prefix(self):
         """Check prefixes of molecules & flowrates dictionaries.
