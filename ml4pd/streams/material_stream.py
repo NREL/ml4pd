@@ -147,7 +147,6 @@ class MaterialStream(Stream):
         Returns:
             MaterialStream: current instance to be fed into columns.
         """
-
         for key, value in kwargs.items():
             if key not in self.__dataclass_fields__:
                 raise AttributeError(f"{key} not recognized.")
@@ -165,7 +164,6 @@ class MaterialStream(Stream):
             self.flow = pd.DataFrame(flowrates)
         except ValueError:
             self.flow = pd.DataFrame({key: [value] for key, value in flowrates.items()})
-
         if self.check_data:
             with timer(verbose=self.verbose, operation="data check", unit=self.object_id) as _:
                 self._check_state_variables()
@@ -285,11 +283,18 @@ class MaterialStream(Stream):
             self._flow_columns.append(f"{self.object_id}_flowrate_{suffix}")
 
         for col in ["temperature", "vapor_fraction", "pressure"]:
-            if getattr(self, col) is None:
-                self.data[f"{self.object_id}_{col}"] = np.nan
-            else:
-                self.data[f"{self.object_id}_{col}"] = getattr(self, col)
-            self._state_columns.append(f"{self.object_id}_{col}")
+            value = getattr(self, col)
+            colname = f"{self.object_id}_{col}"
+            if value is None:
+                df = pd.DataFrame([np.nan]*self.data.shape[0],columns=[colname])
+                self.data = pd.concat([self.data,df],axis=1)
+            elif type(value)==int:
+                df = pd.DataFrame([value]*self.data.shape[0],columns=[colname])
+                self.data = pd.concat([self.data,df],axis=1)
+            elif type(value)==list:
+                df = pd.DataFrame(value,columns=[colname])
+                self.data = pd.concat([self.data,df],axis=1)               
+            self._state_columns.append(colname)
 
     def _add_comp_no(self):
         """Add number of molecular types in a stream."""
