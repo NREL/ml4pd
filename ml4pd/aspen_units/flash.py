@@ -182,6 +182,10 @@ class Flash(UnitOp):
         vapor_stream.status = self.status
         liquid_stream.status = self.status
 
+        #populate pressure data - currently can only run inputs with Temp&VapFrac, would need to do the same once other combinations are added
+        vapor_stream = self._propagate_input_pressure(feed_stream,vapor_stream)
+        liquid_stream = self._propagate_input_pressure(feed_stream,liquid_stream)
+        
         return vapor_stream, liquid_stream
 
     def _adjust_pressure(self, feed_stream: MaterialStream):
@@ -211,3 +215,12 @@ class Flash(UnitOp):
             test_pressure = test_feed_pressure + test_flash_pressure
             if (test_pressure < 0).sum() != 0:
                 raise ValueError("Specified pressure drop would result in a pressure less than 0.")
+
+    def _propagate_input_pressure(self,feed_stream: MaterialStream,output_stream:MaterialStream):
+        output_stream.pressure = feed_stream.pressure
+        
+        pressure_col = output_stream.data.keys()[output_stream.data.keys().str.contains('_pressure')][0]
+        output_stream.data[pressure_col] = feed_stream.pressure
+        output_stream.datasummary['pressure'] = feed_stream.pressure
+
+        return output_stream
